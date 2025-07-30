@@ -12,108 +12,75 @@
         <form id="expenseForm">
             <div class="form-group">
                 <label for="expenditure">Despesa (€):</label>
-                <input type="number" id="expenditure" name="expenditure" step="0.01" min="0" required>
+                <input type="number" id="expenditure" name="despesa" step="0.01" min="0" required>
             </div>
 
             <div class="form-group">
                 <label for="date">Data:</label>
-                <input type="date" id="date" name="date" required>
+                <input type="date" id="date" name="data" required>
             </div>
 
             <div class="form-group">
                 <label for="description">Descrição:</label>
-                <select id="description" name="description" required>
+                <select id="description" name="descricao" required>
                     <option value="">Selecione uma área</option>
-                    <option value="Food">Alimentação</option>
-                    <option value="Transport">Transporte</option>
-                    <option value="Housing">Alojamento</option>
-                    <option value="Entertainment">Lazer</option>
-                    <option value="Other">Outro</option>
+                    <option value="Alimentacao">Alimentação</option>
+                    <option value="Transporte">Transporte</option>
+                    <option value="Alojamento">Alojamento</option>
+                    <option value="Lazer">Lazer</option>
+                    <option value="Outros">Outros</option>
                 </select>
             </div>
 
-            <button type="submit">Submit</button>
+            <button type="submit">Adicionar Despesa</button>
         </form>
         <p id="message" class="hidden"></p>
     </div>
 
     <script>
-    const GOOGLE_SHEETS_WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbzlzr3U7UtHwUO8GRe0U8bZt1An3TuBCFksTJAbqZgkwQX3ieGhNdC59kieUNfdarZm6A/exec'; // Substitua pelo URL que você copiou!
+        // ==============================================================================
+        // *** IMPORTANTE: COLOQUE O SEU URL DO APPS SCRIPT AQUI ***
+        // Este URL será obtido no Passo 3.
+        // Exemplo de formato: 'https://script.google.com/macros/s/AKfycbz_xxxxxxxxxxxxxxxxx/exec'
+        // ==============================================================================
+        const GOOGLE_SHEETS_WEB_APP_URL = 'COLOQUE_O_URL_DO_SEU_APPS_SCRIPT_AQUI'; 
 
-    document.getElementById('expenseForm').addEventListener('submit', async function(event) {
-        event.preventDefault(); // Impede o envio padrão do formulário
+        document.getElementById('expenseForm').addEventListener('submit', async function(event) {
+            event.preventDefault(); // Impede o envio padrão do formulário
 
-        const expenditureInput = document.getElementById('expenditure');
-        const dateInput = document.getElementById('date');
-        const descriptionInput = document.getElementById('description');
-        const messageElement = document.getElementById('message');
-        const submitButton = this.querySelector('button[type="submit"]');
+            const expenditureInput = document.getElementById('expenditure');
+            const dateInput = document.getElementById('date');
+            const descriptionInput = document.getElementById('description');
+            const messageElement = document.getElementById('message');
+            const submitButton = this.querySelector('button[type="submit"]');
 
-        // 1. Validação básica (cliente-side)
-        if (!expenditureInput.value || parseFloat(expenditureInput.value) <= 0) {
-            messageElement.textContent = 'Por favor, insira um valor de despesa válido.';
-            messageElement.className = 'error';
-            messageElement.classList.remove('hidden');
-            return;
-        }
-
-        if (!dateInput.value) {
-            messageElement.textContent = 'Por favor, selecione uma data.';
-            messageElement.className = 'error';
-            messageElement.classList.remove('hidden');
-            return;
-        }
-
-        if (!descriptionInput.value) {
-            messageElement.textContent = 'Por favor, selecione uma descrição.';
-            messageElement.className = 'error';
-            messageElement.classList.remove('hidden');
-            return;
-        }
-
-        // Desabilita o botão para evitar múltiplos envios
-        submitButton.disabled = true;
-        messageElement.textContent = 'A enviar dados...';
-        messageElement.className = 'info'; // Uma classe para feedback temporário
-        messageElement.classList.remove('hidden');
-
-
-        // 2. Coletar os dados do formulário
-        const formData = new FormData();
-        // Os nomes aqui devem ser os mesmos que os atributos 'name' dos inputs HTML
-        formData.append('despesa', expenditureInput.value);
-        formData.append('data', dateInput.value);
-        formData.append('descricao', descriptionInput.value);
-
-        try {
-            // 3. Enviar os dados para o Apps Script
-            const response = await fetch(GOOGLE_SHEETS_WEB_APP_URL, {
-                method: 'POST',
-                body: formData // FormData é ideal para enviar dados de formulário
-            });
-
-            const data = await response.json(); // Assume que o Apps Script retorna JSON
-
-            if (data.success) {
-                messageElement.textContent = 'Despesa adicionada com sucesso!';
-                messageElement.className = 'success';
-                // 4. Limpar o formulário após o sucesso
-                this.reset();
-            } else {
-                messageElement.textContent = 'Erro ao adicionar despesa: ' + data.result;
+            // 1. Validação básica (cliente-side)
+            if (!expenditureInput.value || parseFloat(expenditureInput.value) <= 0) {
+                messageElement.textContent = 'Por favor, insira um valor de despesa válido (maior que zero).';
                 messageElement.className = 'error';
+                messageElement.classList.remove('hidden');
+                return;
             }
 
-        } catch (error) {
-            messageElement.textContent = 'Ocorreu um erro na comunicação: ' + error.message;
-            messageElement.className = 'error';
-            console.error('Erro ao enviar formulário:', error);
-        } finally {
-            // Habilita o botão novamente
-            submitButton.disabled = false;
+            if (!dateInput.value) {
+                messageElement.textContent = 'Por favor, selecione uma data.';
+                messageElement.className = 'error';
+                messageElement.classList.remove('hidden');
+                return;
+            }
+
+            if (!descriptionInput.value) {
+                messageElement.textContent = 'Por favor, selecione uma descrição.';
+                messageElement.className = 'error';
+                messageElement.classList.remove('hidden');
+                return;
+            }
+
+            // Desabilita o botão e mostra mensagem de envio
+            submitButton.disabled = true;
+            messageElement.textContent = 'A enviar dados...';
+            messageElement.className = 'info'; // Classe para feedback de "a enviar"
             messageElement.classList.remove('hidden');
-        }
-    });
-</script>
-</body>
-</html>
+
+
+            // 2.
