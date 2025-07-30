@@ -9,7 +9,7 @@
 <body>
     <div class="container">
         <h1>Controlo de Despesas</h1>
-        <form action="#" method="POST">
+        <form id="expenseForm">
             <div class="form-group">
                 <label for="expenditure">Despesa (€):</label>
                 <input type="number" id="expenditure" name="expenditure" step="0.01" min="0" required>
@@ -28,12 +28,92 @@
                     <option value="Transport">Transporte</option>
                     <option value="Housing">Alojamento</option>
                     <option value="Entertainment">Lazer</option>
-                    <option value="Other">Outros</option>
+                    <option value="Other">Outro</option>
                 </select>
             </div>
 
             <button type="submit">Submit</button>
         </form>
+        <p id="message" class="hidden"></p>
     </div>
+
+    <script>
+    const GOOGLE_SHEETS_WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbzlzr3U7UtHwUO8GRe0U8bZt1An3TuBCFksTJAbqZgkwQX3ieGhNdC59kieUNfdarZm6A/exec'; // Substitua pelo URL que você copiou!
+
+    document.getElementById('expenseForm').addEventListener('submit', async function(event) {
+        event.preventDefault(); // Impede o envio padrão do formulário
+
+        const expenditureInput = document.getElementById('expenditure');
+        const dateInput = document.getElementById('date');
+        const descriptionInput = document.getElementById('description');
+        const messageElement = document.getElementById('message');
+        const submitButton = this.querySelector('button[type="submit"]');
+
+        // 1. Validação básica (cliente-side)
+        if (!expenditureInput.value || parseFloat(expenditureInput.value) <= 0) {
+            messageElement.textContent = 'Por favor, insira um valor de despesa válido.';
+            messageElement.className = 'error';
+            messageElement.classList.remove('hidden');
+            return;
+        }
+
+        if (!dateInput.value) {
+            messageElement.textContent = 'Por favor, selecione uma data.';
+            messageElement.className = 'error';
+            messageElement.classList.remove('hidden');
+            return;
+        }
+
+        if (!descriptionInput.value) {
+            messageElement.textContent = 'Por favor, selecione uma descrição.';
+            messageElement.className = 'error';
+            messageElement.classList.remove('hidden');
+            return;
+        }
+
+        // Desabilita o botão para evitar múltiplos envios
+        submitButton.disabled = true;
+        messageElement.textContent = 'A enviar dados...';
+        messageElement.className = 'info'; // Uma classe para feedback temporário
+        messageElement.classList.remove('hidden');
+
+
+        // 2. Coletar os dados do formulário
+        const formData = new FormData();
+        // Os nomes aqui devem ser os mesmos que os atributos 'name' dos inputs HTML
+        formData.append('despesa', expenditureInput.value);
+        formData.append('data', dateInput.value);
+        formData.append('descricao', descriptionInput.value);
+
+        try {
+            // 3. Enviar os dados para o Apps Script
+            const response = await fetch(GOOGLE_SHEETS_WEB_APP_URL, {
+                method: 'POST',
+                body: formData // FormData é ideal para enviar dados de formulário
+            });
+
+            const data = await response.json(); // Assume que o Apps Script retorna JSON
+
+            if (data.success) {
+                messageElement.textContent = 'Despesa adicionada com sucesso!';
+                messageElement.className = 'success';
+                // 4. Limpar o formulário após o sucesso
+                this.reset();
+            } else {
+                messageElement.textContent = 'Erro ao adicionar despesa: ' + data.result;
+                messageElement.className = 'error';
+            }
+
+        } catch (error) {
+            messageElement.textContent = 'Ocorreu um erro na comunicação: ' + error.message;
+            messageElement.className = 'error';
+            console.error('Erro ao enviar formulário:', error);
+        } finally {
+            // Habilita o botão novamente
+            submitButton.disabled = false;
+            messageElement.classList.remove('hidden');
+        }
+    });
+</script>
 </body>
 </html>
