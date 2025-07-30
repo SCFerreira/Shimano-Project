@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="pt-PT">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Controlo de Despesas</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container">
+        <h1>Controlo de Despesas</h1>
+        <form action="#" method="POST">
+            <div class="form-group">
+                <label for="expenditure">Despesa (€):</label>
+                <input type="number" id="expenditure" name="expenditure" step="0.01" min="0" required>
+            </div>
+
+            <div class="form-group">
+                <label for="date">Data:</label>
+                <input type="date" id="date" name="date" required>
+            </div>
+
+            <div class="form-group">
+                <label for="description">Descrição:</label>
+                <select id="description" name="description" required>
+                    <option value="">Selecione uma área</option>
+                    <option value="Food">Alimentação</option>
+                    <option value="Transport">Transporte</option>
+                    <option value="Housing">Alojamento</option>
+                    <option value="Entertainment">Lazer</option>
+                    <option value="Other">Outros</option>
+                </select>
+            </div>
+
+            <button type="submit">Submit</button>
+        </form>
+    </div>
+</body>
+</html>
