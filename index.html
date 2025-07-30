@@ -83,4 +83,46 @@
             messageElement.classList.remove('hidden');
 
 
-            // 2.
+            // 2. Coletar os dados do formulário
+            const formData = new FormData();
+            // Os nomes (primeiro argumento de append) DEVEM corresponder aos atributos 'name' dos inputs HTML
+            // E aos cabeçalhos normalizados na sua Google Sheet.
+            formData.append('despesa', expenditureInput.value);
+            formData.append('data', dateInput.value);
+            formData.append('descricao', descriptionInput.value);
+
+            try {
+                // 3. Enviar os dados para o Apps Script
+                const response = await fetch(GOOGLE_SHEETS_WEB_APP_URL, {
+                    method: 'POST',
+                    body: formData // FormData é ideal para enviar dados de formulário
+                });
+
+                // Tentar ler a resposta como JSON. Se o Apps Script não retornar JSON válido, isto pode falhar.
+                const data = await response.json(); 
+
+                if (data.success) {
+                    messageElement.textContent = 'Despesa adicionada com sucesso!';
+                    messageElement.className = 'success';
+                    this.reset(); // Limpa o formulário após o sucesso
+                } else {
+                    // Se o Apps Script retornar 'success: false'
+                    messageElement.textContent = 'Erro ao adicionar despesa: ' + (data.result || 'Detalhes do erro desconhecidos.');
+                    messageElement.className = 'error';
+                }
+
+            } catch (error) {
+                // Erro de rede ou erro ao processar a resposta
+                messageElement.textContent = 'Ocorreu um erro de comunicação ou processamento. Verifique a consola para mais detalhes.';
+                messageElement.className = 'error';
+                console.error('Erro ao enviar formulário ou processar resposta:', error);
+            } finally {
+                // Habilita o botão novamente
+                submitButton.disabled = false;
+                // Garante que a mensagem esteja visível
+                messageElement.classList.remove('hidden');
+            }
+        });
+    </script>
+</body>
+</html>
